@@ -1,6 +1,5 @@
 package de.planyverse.xfdf_annotation_merge;
 
-import com.itextpdf.forms.PdfAcroForm;
 import com.itextpdf.forms.xfdf.XfdfObject;
 import com.itextpdf.forms.xfdf.XfdfObjectFactory;
 import com.itextpdf.kernel.pdf.PdfDocument;
