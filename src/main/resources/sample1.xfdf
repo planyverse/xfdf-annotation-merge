@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?><xfdf xmlns="http://ns.adobe.com/xfdf/" xml:space="preserve">
+<annots>
+    <underline color="#000000" coords="71.309761,768.940002,181.428757,768.940002,71.309761,757.900024,181.428757,757.900024" creationdate="D:20250312123241Z" date="D:20250312123241Z" flags="print" name="01JP55FGFQ7GWPAC13KSNPN7EE" page="0" pspdf-blend-mode="normal" rect="71.309761,757.900024,181.428757,768.940002" width="0.000000"/>
+    <text color="#FFD83F" creationdate="D:20250312123244Z" date="D:20250312123250Z" flags="print" icon="Comment" name="01JP55FK8GRJ1K62WS8C3ECH8V" page="0" rect="199.955994,541.839966,235.955994,577.839966" style="solid" width="1.000000">
+        <contents>Text</contents>
+        <contents-richtext><body xmlns="http://www.w3.org/1999/xhtml" xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/" xfa:APIVersion="Acrobat:11.0.12" xfa:spec="2.0.2"><p><span style="color: #FFD83F">Text</span></p></body></contents-richtext>
+    </text>
+    <popup creationdate="D:20250312123245Z" date="D:20250312123245Z" page="0" rect="199.955994,341.839966,399.955994,541.839966" style="solid" width="1.000000"/>
+</annots>
+<ids modified="2DAA1961C89DC9FDDE7F5C1FC6705DCC5B1A8FD65422AA5A1BA8F57EF8EDFCFCEDE1212EDE38A869FFB1A817EE27AA9C35FF57CD68BB43EFCDFB34481ECF20F4" original="525BF54A189DD74A965526E52BF69937"/>
+</xfdf>

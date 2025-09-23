@@ -11,7 +11,7 @@ import java.io.IOException;
 class XfdfServiceTest {
 
     @Test
-    void mergeXfdfIntoPdf() throws IOException, ParserConfigurationException, SAXException {
+    void mergeXfdfIntoPdf() throws Exception {
         new XfdfService().mergeXfdfIntoPdf();
     }
 }
