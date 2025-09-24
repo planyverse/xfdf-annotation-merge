@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?><xfdf xmlns="http://ns.adobe.com/xfdf/" xml:space="preserve">
 <f href="src/main/resources/test-document.pdf"/>
 <annots>
-    <circle color="#FF7293" creationdate="D:20250827122921Z" date="D:20250827122930Z" flags="print" name="01K3NR2493HM8131W9E22YXMS8" page="0" rect="103.969887,260.851990,255.169891,319.251984" style="solid" title="Design, Dieter (Fachplaner GmbH)" width="5.000000"/>
+    <circle color="#FF7293" creationdate="D:20250827122921Z" date="D:20250827122930Z" flags="print"
+            name="01K3NR2493HM8131W9E22YXMS8" page="0"
+            rect="103.969887,260.851990,255.169891,319.251984"
+            style="solid" title="Design, Dieter (Fachplaner GmbH)" width="5.000000"/>
     <polyline color="#F39500" creationdate="D:20250827123024Z" date="D:20250827123054Z" flags="print" name="01K3NR42K9200YX5NNWYBXYG96" page="0" rect="322.969879,318.152130,626.669312,372.351471" style="solid" title="Design, Dieter (Fachplaner GmbH)" width="5.000000">
         <vertices>327.969879,359.251984;406.369873,359.251984;335.169891,325.651978;408.769897,326.451965;461.569885,360.051971;460.769897,326.451965;519.169861,326.451965;487.969879,364.851990;567.169861,363.251984;537.569885,328.051971;618.369873,328.851990;619.169861,365.651978</vertices>
     </polyline>
