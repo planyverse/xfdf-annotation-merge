@@ -1,5 +1,6 @@
 package de.planyverse.xfdf_annotation_merge;
 
+import com.itextpdf.kernel.colors.Color;
 import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.*;
@@ -81,35 +82,44 @@ public class XfdfService {
                         }
                 }
                 case "circle" -> {
-                    DeviceRgb color = new DeviceRgb(0,0,0);
-                    String decodedColor = getAttributeTextContent(element, "color");
-                    if(decodedColor != null) {
-                        Color awtColor = Color.decode(decodedColor);
-                        color = new DeviceRgb(awtColor.getRed(), awtColor.getGreen(), awtColor.getBlue());
-                    }
                     annotation = new PdfCircleAnnotation(rect)
-                            .setColor(color);
+                            .setColor(getColor(element));
                 }
                 case "polyline" -> {
                     var content = getElementTextContent(element, "vertices");
                     if(content != null) {
                         String[] parts = content.split("[,;]");
-                        float[] floatValues = new float[parts.length]; // line1: x1,y1,x2,y2; line2: x3,y3,x4,y4; ...
-                        for (int j = 0; j < parts.length; j++) {
-                            floatValues[j] = Float.parseFloat(parts[j].trim());
-                        }
+                        float[] floatValues = getFloatValues(parts);
                         for (int pos = 0; pos <= floatValues.length - 4; pos += 4) {
-                            var subArray = Arrays.copyOfRange(floatValues, pos, pos + 4);
                             annotation = new PdfLineAnnotation(rect,Arrays.copyOfRange(floatValues, pos, pos+4));
                             page.addAnnotation(annotation);
                         }
                         annotation = null;
                     }
                 }
+                case "highlight" -> {
+                    var coords = getAttributeTextContent(element, "coords").split(",");
+                    float[] floatValues = getFloatValues(coords);
+                    annotation = new PdfTextMarkupAnnotation(rect, PdfName.Highlight, floatValues)
+                            .setColor(getColor(element));
+                }
+                case "freetext" -> {
+                    var text = new PdfString(getElementTextContent(element, "contents"));
+                    annotation = new PdfFreeTextAnnotation(rect, text)
+                            .setColor(getColor(element));
+                }
             }
 
             if(annotation != null) page.addAnnotation(annotation);
         }
+    }
+
+    private static float[] getFloatValues(String[] parts) {
+        float[] floatValues = new float[parts.length];
+        for (int j = 0; j < parts.length; j++) {
+            floatValues[j] = Float.parseFloat(parts[j].trim());
+        }
+        return floatValues;
     }
 
     private static String getElementTextContent(Node element, String contentTagName) {
@@ -136,5 +146,15 @@ public class XfdfService {
         var attribute = element.getAttributes().getNamedItem(attributeName);
         if(attribute != null) return attribute.getNodeValue();
         return null;
+    }
+
+    private static Color getColor(Node element) {
+        DeviceRgb color = new DeviceRgb(0,0,0);
+        String decodedColor = getAttributeTextContent(element, "color");
+        if(decodedColor != null) {
+            java.awt.Color awtColor = java.awt.Color.decode(decodedColor);
+            color = new DeviceRgb(awtColor.getRed(), awtColor.getGreen(), awtColor.getBlue());
+        }
+        return color;
     }
 }
