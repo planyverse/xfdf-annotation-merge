@@ -123,6 +123,16 @@ public class XfdfService {
             var borderStyle = new int[] {0,0,(int)Float.parseFloat(width)};
             annotation.setBorder(new PdfArray(borderStyle));
         }
+
+        var flags = getAttributeTextContent(element, "flags");
+        if (flags != null && flags.equalsIgnoreCase("print")) {
+            annotation.setFlag(PdfAnnotation.PRINT);
+        }
+
+        var style = getAttributeTextContent(element, "style");
+        if (style != null) {
+            // TODO
+        }
     }
 
     private static float[] getFloatValues(String[] parts) {
