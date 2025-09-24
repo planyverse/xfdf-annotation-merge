@@ -4,11 +4,13 @@ import com.itextpdf.kernel.colors.Color;
 import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.*;
+import com.itextpdf.kernel.pdf.action.PdfAction;
 import com.itextpdf.kernel.pdf.annot.*;
 import com.itextpdf.kernel.pdf.colorspace.PdfColorSpace;
 import com.itextpdf.kernel.pdf.xobject.PdfFormXObject;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -18,6 +20,7 @@ import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 
 @Service
 public class XfdfService {
@@ -54,9 +57,7 @@ public class XfdfService {
         NodeList annotations = annots.getChildNodes();
 
         for(int i = 0; i < annotations.getLength(); i++) {
-            Node element = annotations.item(i);
-
-            if(element.getNodeType() != Node.ELEMENT_NODE) continue; // skip text nodes
+            if(!(annotations.item(i) instanceof Element element)) continue; // skip text nodes
 
             PdfAnnotation annotation = null;
             var rect = getRectValues(element);
@@ -72,13 +73,11 @@ public class XfdfService {
                 case "stamp" -> {
                     var content = getElementTextContent(element, "appearance");
                     if(content != null) {
-                        byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
-                        PdfDictionary appearance = new PdfDictionary();
+                        byte[] bytes = Base64.getDecoder().decode(content);
                         PdfStream stream = new PdfStream(bytes);
-                        var xObject = new PdfFormXObject(stream); // just to check if the content is a valid PDF stream
-                        appearance.put(PdfName.N, stream);
+                        var xObject = new PdfFormXObject(stream);
                         annotation = new PdfStampAnnotation(rect)
-                                .setAppearance(PdfName.N, xObject.getPdfObject());
+                                .setNormalAppearance(xObject.getPdfObject());
                         }
                 }
                 case "circle" -> {
@@ -103,6 +102,54 @@ public class XfdfService {
                 case "freetext" -> {
                     var text = new PdfString(getElementTextContent(element, "contents"));
                     annotation = new PdfFreeTextAnnotation(rect, text);
+                    var defaultAppearance = getAttributeTextContent(element, "defaultappearance");
+                    if(defaultAppearance != null) {
+                        ((PdfFreeTextAnnotation)annotation).setDefaultAppearance(new PdfString(defaultAppearance));
+                    }
+                    setElementMetadata(element, annotation);
+                }
+                case "link" -> {
+                    var uri = getAttributeTextContent(element, "target");
+                    annotation = new PdfLinkAnnotation(rect)
+                            .setAction(PdfAction.createURI(uri));
+                    setElementMetadata(element, annotation);
+                }
+                case "line" -> {
+                    var start = getAttributeTextContent(element, "start");
+                    var end = getAttributeTextContent(element, "end");
+                    if(start != null && end != null) {
+                        annotation = new PdfLineAnnotation(rect, new float[] {
+                                Float.parseFloat(start.split(",")[0].trim()),
+                                Float.parseFloat(start.split(",")[1].trim()),
+                                Float.parseFloat(end.split(",")[0].trim()),
+                                Float.parseFloat(end.split(",")[1].trim())
+                        });
+                        setElementMetadata(element, annotation);
+                    }
+                }
+                case "ink" -> {
+                    PdfArray inkList = new PdfArray();
+                    var gestures = element.getElementsByTagName("gesture");
+                    for(int g = 0; g < gestures.getLength(); g++) {
+                        String[] pairs = gestures.item(g).getTextContent().trim().split(";");
+                        PdfArray gesture = new PdfArray();
+                        for (String pair : pairs) {
+                            String[] xy = pair.trim().split(",");
+                            if (xy.length == 2) {
+                                gesture.add(new PdfNumber(Float.parseFloat(xy[0])));
+                                gesture.add(new PdfNumber(Float.parseFloat(xy[1])));
+                            }
+                        }
+                        inkList.add(gesture);
+                    }
+                    annotation = new PdfInkAnnotation(rect, inkList);
+                    NodeList intensityList = element.getElementsByTagName("pspdf-intensity");
+                    if (intensityList.getLength() > 0) {
+                        String[] intensities = intensityList.item(0).getTextContent().split(";");
+                        if (intensities.length > 0) {
+                            ((PdfInkAnnotation)annotation).setOpacity(new PdfNumber(Float.parseFloat(intensities[0])));
+                        }
+                    }
                     setElementMetadata(element, annotation);
                 }
             }
