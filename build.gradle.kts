@@ -20,7 +20,7 @@ repositories {
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
-    implementation("com.itextpdf:itext-core:9.2.0") // PDF file processing
+    implementation("com.itextpdf:itext-core:9.3.0") // PDF file processing
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")

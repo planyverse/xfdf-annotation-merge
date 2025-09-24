@@ -6,7 +6,6 @@ import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.*;
 import com.itextpdf.kernel.pdf.action.PdfAction;
 import com.itextpdf.kernel.pdf.annot.*;
-import com.itextpdf.kernel.pdf.colorspace.PdfColorSpace;
 import com.itextpdf.kernel.pdf.xobject.PdfFormXObject;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
@@ -18,7 +17,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.*;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 
@@ -69,6 +67,7 @@ public class XfdfService {
                     annotation = new PdfTextAnnotation(rect)
                             .setOpen(true)
                             .setContents(getElementTextContent(element, "contents"));
+                    setElementMetadata(element, annotation);
                 }
                 case "stamp" -> {
                     var content = getElementTextContent(element, "appearance");
@@ -94,7 +93,9 @@ public class XfdfService {
                     }
                 }
                 case "highlight" -> {
-                    var coords = getAttributeTextContent(element, "coords").split(",");
+                    var coordsValue = getAttributeTextContent(element, "coords");
+                    if(coordsValue == null) continue;
+                    var coords = coordsValue.split(",");
                     float[] floatValues = getFloatValues(coords);
                     annotation = new PdfTextMarkupAnnotation(rect, PdfName.Highlight, floatValues);
                     setElementMetadata(element, annotation);
@@ -102,9 +103,13 @@ public class XfdfService {
                 case "freetext" -> {
                     var text = new PdfString(getElementTextContent(element, "contents"));
                     annotation = new PdfFreeTextAnnotation(rect, text);
-                    var defaultAppearance = getAttributeTextContent(element, "defaultappearance");
+                    var defaultAppearance = getElementTextContent(element, "defaultappearance");
                     if(defaultAppearance != null) {
                         ((PdfFreeTextAnnotation)annotation).setDefaultAppearance(new PdfString(defaultAppearance));
+                    }
+                    var defaultStyle = getElementTextContent(element, "defaultstyle");
+                    if(defaultStyle != null) {
+                        ((PdfFreeTextAnnotation)annotation).setDefaultStyleString(new PdfString(defaultStyle));
                     }
                     setElementMetadata(element, annotation);
                 }
@@ -167,8 +172,9 @@ public class XfdfService {
 
         var width = getAttributeTextContent(element, "width");
         if (width != null) {
-            var borderStyle = new int[] {0,0,(int)Float.parseFloat(width)};
-            annotation.setBorder(new PdfArray(borderStyle));
+            var dict = new PdfDictionary();
+            dict.put(PdfName.W, new PdfNumber((int)Float.parseFloat(width)));
+            annotation.put(PdfName.BS, dict);
         }
 
         var flags = getAttributeTextContent(element, "flags");
@@ -176,10 +182,26 @@ public class XfdfService {
             annotation.setFlag(PdfAnnotation.PRINT);
         }
 
-        var style = getAttributeTextContent(element, "style");
+        var style = getStyle(element);
         if (style != null) {
-            // TODO
+            if(annotation instanceof PdfCircleAnnotation) ((PdfCircleAnnotation) annotation).setBorderStyle(style);
+            if(annotation instanceof PdfLineAnnotation) ((PdfLineAnnotation) annotation).setBorderStyle(style);
+            if(annotation instanceof PdfPolyGeomAnnotation) ((PdfPolyGeomAnnotation) annotation).setBorderStyle(style);
         }
+    }
+
+    private static PdfName getStyle(Node element) {
+        var style = getAttributeTextContent(element, "style");
+        if(style != null) {
+            switch (style) {
+                case "dashed": return PdfAnnotation.STYLE_DASHED;
+                case "solid": return PdfAnnotation.STYLE_SOLID;
+                case "beveled": return PdfAnnotation.STYLE_BEVELED;
+                case "inset": return PdfAnnotation.STYLE_INSET;
+                case "underline": return PdfAnnotation.STYLE_UNDERLINE;
+            }
+        }
+        return null;
     }
 
     private static float[] getFloatValues(String[] parts) {
