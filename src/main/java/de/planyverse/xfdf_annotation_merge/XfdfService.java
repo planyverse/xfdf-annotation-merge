@@ -77,6 +77,7 @@ public class XfdfService {
                         var xObject = new PdfFormXObject(stream);
                         annotation = new PdfStampAnnotation(rect)
                                 .setNormalAppearance(xObject.getPdfObject());
+                        setElementMetadata(element, annotation);
                         }
                 }
                 case "circle" -> {
